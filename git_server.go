@@ -129,9 +129,7 @@ func handleChannel(connection *ssh.ServerConn, newChannel ssh.NewChannel) {
 
 			args[1] = strings.Replace(args[1], "'", "", -1)
 			pathRepo := strings.Split(args[1], "/")
-			log.Println(pathRepo)
 			name := pathRepo[len(pathRepo)-1:][0]
-			log.Println(name)
 			jsonStr := []byte(fmt.Sprintf(`{"key":{"key":"%s"}, "project":{"name":"%s"}}`, publicKey, strings.TrimSuffix(name, ".git")))
 			url, err := url.Parse("http://" + authServer + ":3000/api/authorization")
 			if err != nil {
@@ -165,7 +163,7 @@ func handleChannel(connection *ssh.ServerConn, newChannel ssh.NewChannel) {
 
 			}
 
-			cmd := exec.Command("git-shell", "-c", args[0] + " '" + gitDir + name + "'")
+			cmd := exec.Command("git-shell", "-c", args[0] + " '" + gitDir + pathRepo.join("/") + "'")
 			pipeCommand(cmd, channel, channel.Stderr(), channel)
 			cmd.Start()
 			status, err := exitStatus(cmd.Wait())
