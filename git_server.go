@@ -163,7 +163,7 @@ func handleChannel(connection *ssh.ServerConn, newChannel ssh.NewChannel) {
 
 			}
 
-			cmd := exec.Command("git-shell", "-c", args[0] + " '" + gitDir + pathRepo.join("/") + "'")
+			cmd := exec.Command("git-shell", "-c", args[0] + " '" + gitDir + strings.Join(pathRepo, "/") + "'")
 			pipeCommand(cmd, channel, channel.Stderr(), channel)
 			cmd.Start()
 			status, err := exitStatus(cmd.Wait())
