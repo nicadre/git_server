@@ -156,7 +156,14 @@ func handleChannel(connection *ssh.ServerConn, newChannel ssh.NewChannel) {
 
 			log.Println(connection.User() + "@" + connection.RemoteAddr().String() + " exec " + string(req.Payload[4:]))
 
-			cmd := exec.Command("git-shell", "-c", args[0] + " '/tmp/" + name + "'")
+			gitDir := os.Getenv("GIT_SERVER_DIRECTORY")
+			if gitDir == "" {
+
+				gitDir = "/tmp/"
+
+			}
+
+			cmd := exec.Command("git-shell", "-c", args[0] + " '" + gitDir + name + "'")
 			pipeCommand(cmd, channel, channel.Stderr(), channel)
 			cmd.Start()
 			status, err := exitStatus(cmd.Wait())
@@ -330,6 +337,23 @@ func publicKeyCallback(connectionMetadata ssh.ConnMetadata, key ssh.PublicKey) (
 }
 
 func main() {
+
+	logFile := os.Getenv("GIT_SERVER_LOGFILE")
+	if logFile == "" {
+
+		logFile = "/tmp/git_server.log"
+
+	}
+
+	f, err := os.OpenFile(logFile, os.O_WRONLY | os.O_CREATE | os.O_APPEND, 0644)
+	if err != nil {
+
+		log.Fatal("Can't open log file: ", err)
+
+	}
+
+	defer f.Close()
+	log.SetOutput(f)
 
 	config := &ssh.ServerConfig{
 
